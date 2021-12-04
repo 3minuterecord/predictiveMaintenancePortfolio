@@ -144,5 +144,24 @@ def MD_threshold(dist, extreme = False, verbose = False):
     threshold = np.mean(dist) * k
     return threshold
 
+def ifelse(x, list_of_checks, yes_val, no_val):
+    if x in list_of_checks:
+        res = yes_val
+    else: 
+        res = no_val
+    return(res)
 
+def clampit(x, cl_lim, cl_val, cl_type):
+    if cl_type == 'high':
+        if x > cl_lim:
+            res = cl_val
+        else: 
+            res = x
+        return(res)
+    elif cl_type == 'low':
+        if x < cl_lim:
+            res = cl_val
+        else: 
+            res = x
+        return(res)   
  
