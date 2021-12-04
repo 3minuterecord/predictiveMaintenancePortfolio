@@ -151,6 +151,7 @@ def ifelse(x, list_of_checks, yes_val, no_val):
         res = no_val
     return(res)
 
+# Clamp data
 def clampit(x, cl_lim, cl_val, cl_type):
     if cl_type == 'high':
         if x > cl_lim:
@@ -163,5 +164,19 @@ def clampit(x, cl_lim, cl_val, cl_type):
             res = cl_val
         else: 
             res = x
-        return(res)   
+        return(res)
+
+# Check for NAs (missing data)
+def check_for_nas(dat):
+    for col in dat.columns:
+        count_nas = dat[col].isnull().sum()
+        count_per = str(round(100 * count_nas / len(dat), 2)) + '%'
+        print(str(col) + ' has ' + str(count_nas) + ' NAs\t\t\t' + count_per)  
+
+# Get the cumsum of a list
+def Cumulative(lists):
+    cu_list = []
+    length = len(lists)
+    cu_list = [sum(lists[0:x:1]) for x in range(0, length+1)]
+    return cu_list[1:] 
  
