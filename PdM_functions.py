@@ -2,6 +2,8 @@
 from __future__ import division, print_function
 
 import numpy as np
+import pandas as pd
+from itertools import groupby
 
 try:
     from pylab import plt
@@ -179,4 +181,95 @@ def Cumulative(lists):
     length = len(lists)
     cu_list = [sum(lists[0:x:1]) for x in range(0, length+1)]
     return cu_list[1:] 
+
+
+# Define a function to remove segments of timeseries data
+# e.g., a large period of broken/recovering time
+def remove_segements(segment_vec, mapping, dat, trans_window, keep):    
+    print('Input segement categories: ', segment_vec.unique())
+    
+    # Dataframe to hold the segments that will cut out
+    dat_cut = pd.DataFrame()
+    
+    # Apply to the mapping to the segment vector
+    segment_vec = segment_vec.map(mapping)
+    print('Categories after mapping: ', segment_vec.unique())
+    
+    # Calculate the run length encoding
+    rle = [(k, sum(1 for i in g)) for k, g in groupby(segment_vec)]
+    print('Run length encoding: ', rle)
+
+    # Convert rle to a dataframe
+    value = []
+    length = []
+    for element in range(len(rle)):
+        value.append(rle[element][0])
+        length.append(rle[element][1])        
+        
+    cum_length = Cumulative(length)
+    df_rle = pd.DataFrame()
+    df_rle['value'] = pd.Series(value)
+    df_rle['length'] = pd.Series(length)
+    df_rle['run_end'] = pd.Series(cum_length)
+    df_rle['run_start'] = df_rle['run_end'].shift(1, axis = 0)
+    df_rle.iloc[0, -1] = 0
+    df_rle['count'] = (df_rle['run_end']+trans_window) - (df_rle['run_start']-trans_window)
+   
+    # Now loop through and remove rows
+    dat.reset_index(drop = True, inplace = True)
+    dat['id'] = dat.index # use an id column for row identification
+    for row in range(len(df_rle)):     
+        print('>')
+        if df_rle.loc[row, 'value'] == keep:
+            print('Skipping ' + keep + ' segment(s)...')
+            next
+        else:    
+            start_row = int(df_rle.loc[row, 'run_start']) - trans_window
+            end_row = int(df_rle.loc[row, 'run_end']) + trans_window - 1
+            print('Remove rows: ', [start_row, end_row])
+            print('Removing ' + str(end_row - start_row + 1) + ' rows...')  
+            
+            # Add rows to cut-out dataset
+            dat_cut_add = dat[dat['id'].isin(list(range(start_row, (end_row+1), 1)))]
+            dat_cut = pd.concat([dat_cut, dat_cut_add], ignore_index=True)
+
+            # Remove rows from base dataset
+            dat = dat[dat['id'].isin(list(range(start_row, (end_row+1), 1))) == False]            
+    
+    # Revert to timestamp index & drop id column
+    dat.index = dat['timestamp']
+    dat = dat.drop('id', axis = 1)
+    dat_cut.index = dat_cut['timestamp']
+    dat_cut = dat_cut.drop('id', axis = 1)
+
+    return(dat, dat_cut)
+
+def prep_mahalonobis_data (dist_dat, thresh, pca_dat):
+    # Prepare test data for visualization
+    dat = pd.DataFrame()
+    dat['Mob dist'] = dist_dat
+    dat['Thresh'] = thresh
+    dat['Anomaly'] = dat['Mob dist'] > dat['Thresh']
+    dat.index = pca_dat.index
+    dat['timestamp'] = dat.index
+
+    n_outliers = dat[dat['Anomaly'] == True].shape[0]
+    print("There are", n_outliers, "anomalies in the test set out of", dat.shape[0], "points")
+    print("> Corresponding to " + str(round(100*(n_outliers / dat.shape[0]), 2)) + '%')
+
+    return(dat)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
