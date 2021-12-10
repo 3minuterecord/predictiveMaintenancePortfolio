@@ -185,7 +185,7 @@ def Cumulative(lists):
 
 # Define a function to remove segments of timeseries data
 # e.g., a large period of broken/recovering time
-def remove_segements(segment_vec, mapping, dat, trans_window, keep):    
+def remove_segements(segment_vec, mapping, dat, trans_window, keep, timestep=True):    
     print('Input segement categories: ', segment_vec.unique())
     
     # Dataframe to hold the segments that will cut out
@@ -236,10 +236,12 @@ def remove_segements(segment_vec, mapping, dat, trans_window, keep):
             # Remove rows from base dataset
             dat = dat[dat['id'].isin(list(range(start_row, (end_row+1), 1))) == False]            
     
-    # Revert to timestamp index & drop id column
-    dat.index = dat['timestamp']
-    dat = dat.drop('id', axis = 1)
-    dat_cut.index = dat_cut['timestamp']
+    if timestep is True:
+       # Revert to timestamp index & drop id column
+        dat.index = dat['timestamp']
+        dat_cut.index = dat_cut['timestamp']
+
+    dat = dat.drop('id', axis = 1)    
     dat_cut = dat_cut.drop('id', axis = 1)
 
     return(dat, dat_cut)
