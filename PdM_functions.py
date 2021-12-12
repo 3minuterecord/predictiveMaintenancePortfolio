@@ -251,11 +251,12 @@ def prep_mahalonobis_data (dist_dat, thresh, pca_dat):
     dat = pd.DataFrame()
     dat['Mob dist'] = dist_dat
     dat['Thresh'] = thresh
-    dat['Anomaly'] = dat['Mob dist'] > dat['Thresh']
+    dat['prediction'] = dat['Mob dist'] > dat['Thresh']
+    dat['prediction'] = dat['prediction'].astype(int)
     dat.index = pca_dat.index
     dat['timestamp'] = dat.index
 
-    n_outliers = dat[dat['Anomaly'] == True].shape[0]
+    n_outliers = dat[dat['prediction'] == 1].shape[0]
     print("There are", n_outliers, "anomalies in the test set out of", dat.shape[0], "points")
     print("> Corresponding to " + str(round(100*(n_outliers / dat.shape[0]), 2)) + '%')
 
