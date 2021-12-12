@@ -262,7 +262,38 @@ def prep_mahalonobis_data (dist_dat, thresh, pca_dat):
 
     return(dat)
 
+# Utility function for creating basic data quality report for numeric data
+def generate_dq_num(dat, cols):
+    data_types = pd.DataFrame(dat.dtypes, columns=['Data Type'])
+    missing_data = pd.DataFrame(dat.isnull().sum(), columns=['Missing Values'])
+    unique_values = pd.DataFrame(columns=['Unique Values'])
+    max_values = pd.DataFrame(columns=['Max Value'])
+    min_values = pd.DataFrame(columns=['Min Value'])
+    mean_values = pd.DataFrame(columns=['Mean Value'])
+    median_values = pd.DataFrame(columns=['Median Value'])
+    for row in list(cols.values):
+        unique_values.loc[row] = [dat[row].nunique()]    
+        min_values.loc[row] = [dat[row].min()]
+        mean_values.loc[row] = [dat[row].mean()]
+        median_values.loc[row] = [dat[row].median()]
+        max_values.loc[row] = [dat[row].max()]    
+    dq_report = data_types.join(missing_data).join(unique_values).join(min_values).\
+        join(mean_values).join(median_values).join(max_values)
+    return(dq_report)
 
+# Utility function for creating basic data quality report for category data
+def generate_dq_cat(dat, cols):
+    data_types = pd.DataFrame(dat.dtypes, columns=['Data Type'])
+    missing_data = pd.DataFrame(dat.isnull().sum(), columns=['Missing Values'])
+    unique_values = pd.DataFrame(columns=['Unique Values'])
+    max_values = pd.DataFrame(columns=['Max Value'])
+    min_values = pd.DataFrame(columns=['Min Value'])        
+    for row in list(cols.values):
+        unique_values.loc[row] = [dat[row].nunique()]    
+        min_values.loc[row] = [dat[row].min()]               
+        max_values.loc[row] = [dat[row].max()]    
+    dq_report = data_types.join(missing_data).join(unique_values).join(min_values).join(max_values)
+    return(dq_report)
 
 
 
