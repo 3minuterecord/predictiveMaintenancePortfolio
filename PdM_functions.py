@@ -128,7 +128,7 @@ def MahalanobisDist(inv_cov_matrix, mean_distr, data, verbose=False):
         md.append(np.sqrt(diff[i].dot(inv_covariance_matrix).dot(diff[i])))
     return md
 
-# CHECK IF MATRIX IS POSITIVE DEFINITE
+# CHeck if matrix is positive
 def is_pos_def(A):
     if np.allclose(A, A.T):
         try:
@@ -140,7 +140,7 @@ def is_pos_def(A):
         return False
 
 
-# CALCULATE THRESHOLD FOR CLASSIFYING AS ANOMALY
+# Calcualte threshold for Mahalanobis classification as nomaly
 def MD_threshold(dist, extreme = False, verbose = False):
     k = 3. if extreme else 2.
     threshold = np.mean(dist) * k
